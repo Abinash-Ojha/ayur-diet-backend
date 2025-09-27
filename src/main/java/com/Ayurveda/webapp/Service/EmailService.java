@@ -1,5 +1,6 @@
 package com.Ayurveda.webapp.Service;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.scheduling.annotation.Async;
@@ -9,6 +10,8 @@ import org.springframework.stereotype.Service;
 public class EmailService {
 
     private final JavaMailSender mailSender;
+    @Value("${spring.mail.username}")
+    private String fromEmail;
 
     @Autowired
     public EmailService(JavaMailSender mailSender) {
@@ -16,12 +19,18 @@ public class EmailService {
     }
     @Async
     public void sendEmail(String to, String subject, String body) {
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setFrom("ojhabinash546@gmail.com"); // your Gmail
-        message.setTo(to);
-        message.setSubject(subject);
-        message.setText(body);
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom(fromEmail);  // ✅ pulled from .env / Render env var
+            message.setTo(to);
+            message.setSubject(subject);
+            message.setText(body);
 
-        mailSender.send(message);
+            mailSender.send(message);
+            System.out.println("✅ Email sent to: " + to);
+        } catch (Exception e) {
+            System.err.println("❌ Email sending failed: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 }
